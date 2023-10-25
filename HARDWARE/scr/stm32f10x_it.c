@@ -34,6 +34,7 @@ int finaldata2;
 /*-------------------------------------------------*/
 void USART2_IRQHandler(void)
 {
+    u1_printf("收到数据\r\n");
     if ((USART_GetITStatus(USART2, USART_IT_RXNE) != RESET)) { // 如果USART_IT_RXNE标志置位，表示有数据到了 进入if分支
         if (USART2->DR) {                                      // 处于指令配置状态时，非零值才保存到缓冲区
             Usart2_RxBuff[Usart2_RxCounter] = USART2->DR;      // 保存到缓冲区
@@ -41,6 +42,7 @@ void USART2_IRQHandler(void)
         }
     }
     if ((USART_GetITStatus(USART2, USART_IT_IDLE) != RESET)) {                         // 如USART_IT_IDLE标志置位，表示空闲中断 进入if分支
+        u1_printf("DMA接收\r\n");
         Usart2_RxCounter = USART2->SR;                                                 // 清除USART_IT_IDLE标志  步骤1
         Usart2_RxCounter = USART2->DR;                                                 // 清除USART_IT_IDLE标志  步骤2
         DMA_Cmd(DMA1_Channel6, DISABLE);                                               // 关闭DMA
