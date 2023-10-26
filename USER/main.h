@@ -28,5 +28,8 @@ void LED3_State(void); // 函数声明
 void LED4_State(void); // 函数声明
 void LED_State(void);  // 函数声明
 void Data_State(void); // 函数声明
+void data_analysis(void); // 函数声明
+void OPENDOOR(void); // 函数声明
+void CLOSEDOOR(void); // 函数声明
 
 #endif

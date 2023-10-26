@@ -34,7 +34,7 @@ int finaldata2;
 /*-------------------------------------------------*/
 void USART2_IRQHandler(void)
 {
-    u1_printf("收到数据\r\n");
+
     if ((USART_GetITStatus(USART2, USART_IT_RXNE) != RESET)) { // 如果USART_IT_RXNE标志置位，表示有数据到了 进入if分支
         if (USART2->DR) {                                      // 处于指令配置状态时，非零值才保存到缓冲区
             Usart2_RxBuff[Usart2_RxCounter] = USART2->DR;      // 保存到缓冲区
@@ -42,7 +42,7 @@ void USART2_IRQHandler(void)
         }
     }
     if ((USART_GetITStatus(USART2, USART_IT_IDLE) != RESET)) {                         // 如USART_IT_IDLE标志置位，表示空闲中断 进入if分支
-        u1_printf("DMA接收\r\n");
+        
         Usart2_RxCounter = USART2->SR;                                                 // 清除USART_IT_IDLE标志  步骤1
         Usart2_RxCounter = USART2->DR;                                                 // 清除USART_IT_IDLE标志  步骤2
         DMA_Cmd(DMA1_Channel6, DISABLE);                                               // 关闭DMA
@@ -117,9 +117,7 @@ void USART3_IRQHandler(void)
                 sscanf(fina_data2, "%d", &finaldata2); // 字符串转int
                 Delay_Ms(10);
                 u1_printf("距离值=%dmm,回光量=%d\r\n", finaldata1, finaldata2); // print用串口2，串口1用来和激光模块通讯
-                /* code */
-                // result = finaldata1;
-                // ampdata = finaldata2;
+                
                 for (x = 0; x < j; x++) {
                     fina_data1[x] = 0;
                     fina_data2[x] = 0;
@@ -250,7 +248,8 @@ void EXTI9_5_IRQHandler(void)
 void TIM2_IRQHandler(void)
 {
     if (TIM_GetITStatus(TIM2, TIM_IT_Update) != RESET) { // 如果TIM_IT_Update置位，表示TIM2溢出中断，进入if
-        SystemTimer++;                                   // 全局计时的变量+1,表示过去了1秒钟
+        SystemTimer++; 
+        u1_printf("SystemTimer===================%d\r\n",SystemTimer);                                 // 全局计时的变量+1,表示过去了1秒钟
         TIM_ClearITPendingBit(TIM2, TIM_IT_Update);      // 清除TIM2溢出中断标志
     }
 }

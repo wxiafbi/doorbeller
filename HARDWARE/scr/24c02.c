@@ -137,7 +137,7 @@ void AT24C02_ResumeLEDSta(void)
 		if(sta&0x01) LED1_ON;           //如果sta变量位0置位，打开LED1
 		if(sta&0x02) LED2_ON;           //如果sta变量位1置位，打开LED2
 		if(sta&0x04) LED3_ON;           //如果sta变量位2置位，打开LED3
-		if(sta&0x08) LED4_ON;           //如果sta变量位3置位，打开LED4
+		// if(sta&0x08) LED4_ON;           //如果sta变量位3置位，打开LED4
 	}else{                              //反之24C02地址0 读出的不是0x55，进入else
 		Delay_Ms(500);                  //延迟
 		NVIC_SystemReset();	            //重启
