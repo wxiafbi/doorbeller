@@ -42,11 +42,11 @@ extern int finaldata1;
 extern int finaldata2;
 extern char fina_data1[5];
 unsigned int x;
-unsigned int SystemTimer = 0;               // 用于全局计时的变量           单位秒
-unsigned int TEHUTimer   = 0;               // 用于温湿度采集的计时的变量   单位秒
-unsigned int ADCTimer    = 0;               // 用于ADC采集的计时的变量      单位秒
-u8 DataString[3]         = {'i', 'S', 'M'}; // 串口查询命令
-u8 TX_flag               = 0;               // 发送标志位置零
+unsigned int SystemTimer = 0;                        // 用于全局计时的变量           单位秒
+unsigned int TEHUTimer   = 0;                        // 用于温湿度采集的计时的变量   单位秒
+unsigned int ADCTimer    = 0;                        // 用于ADC采集的计时的变量      单位秒
+u8 DataString[8] = {0x80, 0x06, 0x02, 0x78}; // 串口查询命令
+u8 TX_flag               = 0;                        // 发送标志位置零
 float MAX = 0.0, TEMP = 0.0, DIST = 0.0;
 float Disce[150] = {0};
 float LUNA       = 0;
@@ -54,21 +54,27 @@ float tempdata; // 用于保存传感器表面温度值，传感器表面温度值高于气温20度
 extern int ampdata;
 float adcdata; // 用于保存3个ADC通道的数据
 
-
-
 int main(void)
 {
     int i; // 用于for循环
-
-    IWDG_Init(6, 625); // 独立看门狗 时间4s
-    Delay_Init();      // 延时功能初始化
+    MQTT_Buff_Init(); 
+    IWDG_Init(6, 625);   // 独立看门狗 时间4s
+    // IWDG_Init(6, 156);   // 独立看门狗 时间4s
+    Delay_Init();        // 延时功能初始化
     Usart1_Init(115200); // 串口1功能初始化，波特率9600
     u1_printf("第一步");
     // EXTIX_Init(); // 外部中断初始化
-    Usart2_Init(38400);
-    Usart2_IDELInit(38400);
+    // Usart2_Init(115200);
+    Usart2_IDELInit(9600);
     // beep_init();
-    u2_printf("iSM");
+    // u2_printf("iSM");
+    Usart_SendArray(USART2, DataString, 4);
+    // for (size_t i = 0; i < 4; i++)
+    // {
+    //     /* code */
+    //     u2_printf("%x",DataString[i]);
+    // }
+    
     // LED_Init(); // LED初始化
     //	IIC_Init();                     //初始化IIC接口
     //	AHT10_Init();                   //初始化AHT10
@@ -79,10 +85,9 @@ int main(void)
     // CAT1_GIPO_Init();                                                        // 初始化4G模块的控制IO
     // STMFLASH_Read(0x8010000, &test, 1);                                      // 读取FLASH储存的校验值
     // adcdata = 2 * (float)(Get_Adc_Average(ADC_Channel_4, 8)) * (3.3 / 4096); // 获取计算后的带小数的实际电压值
-    while (1)                                                                // 主循环
+    while (1) // 主循环
     {
 
-        
         // if (Connect_flag == 1) {
         //     /*-------------------------------------------------------------*/
         //     /*                     处理发送缓冲区数据                      */
@@ -103,93 +108,93 @@ int main(void)
         //     /*-------------------------------------------------------------*/
         //     /*                     处理接收缓冲区数据                      */
         //     /*-------------------------------------------------------------*/
-        //     if (MQTT_RxDataOutPtr != MQTT_RxDataInPtr) { // if成立的话，说明接收缓冲区有数据了
-        //         u1_printf("接收到数据:");                // 串口提示信息
-        //         /*-----------------------------------------------------*/
-        //         /*                    处理CONNACK报文                  */
-        //         /*-----------------------------------------------------*/
-        //         // if判断，如果第一个字节是0x20，表示收到的是CONNACK报文
-        //         // 接着我们要判断第4个字节，看看CONNECT报文是否成功
-        //         if (MQTT_RxDataOutPtr[2] == 0x20) {
-        //             switch (MQTT_RxDataOutPtr[5]) {
-        //                 case 0x00:
-        //                     u1_printf("CONNECT报文成功\r\n"); // 串口输出信息
-        //                     ConnectPack_flag = 1;             // CONNECT报文成功
-        //                     beep_on_500ms();
-        //                     break; // 跳出分支case 0x00
-        //                 case 0x01:
-        //                     u1_printf("连接已拒绝，不支持的协议版本，准备重启\r\n"); // 串口输出信息
-        //                     Connect_flag = 0;                                        // Connect_flag置零，重启连接
-        //                     break;                                                   // 跳出分支case 0x01
-        //                 case 0x02:
-        //                     u1_printf("连接已拒绝，不合格的客户端标识符，准备重启\r\n"); // 串口输出信息
-        //                     Connect_flag = 0;                                            // Connect_flag置零，重启连接
-        //                     break;                                                       // 跳出分支case 0x02
-        //                 case 0x03:
-        //                     u1_printf("连接已拒绝，服务端不可用，准备重启\r\n"); // 串口输出信息
-        //                     Connect_flag = 0;                                    // Connect_flag置零，重启连接
-        //                     break;                                               // 跳出分支case 0x03
-        //                 case 0x04:
-        //                     u1_printf("连接已拒绝，无效的用户名或密码，准备重启\r\n"); // 串口输出信息
-        //                     Connect_flag = 0;                                          // Connect_flag置零，重启连接
-        //                     break;                                                     // 跳出分支case 0x04
-        //                 case 0x05:
-        //                     u1_printf("连接已拒绝，未授权，准备重启\r\n"); // 串口输出信息
-        //                     Connect_flag = 0;                              // Connect_flag置零，重启连接
-        //                     break;                                         // 跳出分支case 0x05
-        //                 default:
-        //                     u1_printf("连接已拒绝，未知状态，准备重启\r\n"); // 串口输出信息
-        //                     Connect_flag = 0;                                // Connect_flag置零，重启连接
-        //                     break;                                           // 跳出分支case default
-        //             }
-        //         }
-        //         /*-----------------------------------------------------*/
-        //         /*                    处理SUBACK报文                   */
-        //         /*-----------------------------------------------------*/
-        //         // if判断，第一个字节是0x90，表示收到的是SUBACK报文
-        //         // 接着我们要判断订阅回复，看看是不是成功
-        //         else if (MQTT_RxDataOutPtr[2] == 0x90) {
-        //             for (i = 0; i < S_TOPIC_NUM; i++) { // 循环查询订阅结果
-        //                 switch (MQTT_RxDataOutPtr[6 + i]) {
-        //                     case 0x00:
-        //                     case 0x01:
-        //                         u1_printf("订阅成功%d ", i + 1); // 串口输出信息
-        //                         SubcribePack_flag++;             // SubcribePack_flag++
-        //                         break;                           // 跳出分支
-        //                     default:
-        //                         u1_printf("订阅失败，准备重启\r\n"); // 串口输出信息
-        //                         Connect_flag = 0;                    // Connect_flag置零，重启连接
-        //                         break;                               // 跳出分支
-        //                 }
-        //             }
-        //             u1_printf("\r\n"); // 串口输出信息
-        //         }
-        //         /*-----------------------------------------------------*/
-        //         /*                  处理PINGRESP报文                   */
-        //         /*-----------------------------------------------------*/
-        //         // if判断，第一个字节是0xD0，表示收到的是PINGRESP报文
-        //         else if (MQTT_RxDataOutPtr[2] == 0xD0) {
-        //             u1_printf("PING报文回复\r\n"); // 串口输出信息
-        //             if (Ping_flag == 1) {          // 如果Ping_flag=1，表示第一次发送
-        //                 Ping_flag = 0;             // 要清除Ping_flag标志
-        //             } else if (Ping_flag > 1) {    // 如果Ping_flag>1，表示是多次发送了，而且是2s间隔的快速发送
-        //                 Ping_flag = 0;             // 要清除Ping_flag标志
-        //                 TIM3_ENABLE_30S();         // PING定时器重回30s的时间
-        //             }
-        //         }
-        //         /*-----------------------------------------------------*/
-        //         /*                  处理数据推送报文                   */
-        //         /*-----------------------------------------------------*/
-        //         // if判断，如果第一个字节是0x30，表示收到的是服务器发来的推送数据
-        //         // 我们要提取控制命令
-        //         else if (MQTT_RxDataOutPtr[2] == 0x30) {
-        //             u1_printf("服务器等级0推送\r\n");         // 串口输出信息
-        //             MQTT_DealPushdata_Qs0(MQTT_RxDataOutPtr); // 处理等级0推送数据
-        //         }
-        //         MQTT_RxDataOutPtr += RBUFF_UNIT;            // 接收指针下移
-        //         if (MQTT_RxDataOutPtr == MQTT_RxDataEndPtr) // 如果接收指针到接收缓冲区尾部了
-        //             MQTT_RxDataOutPtr = MQTT_RxDataBuf[0];  // 接收指针归位到接收缓冲区开头
-        //     }
+            if (MQTT_RxDataOutPtr != MQTT_RxDataInPtr) { // if成立的话，说明接收缓冲区有数据了
+                u1_printf("接收到数据:");                // 串口提示信息
+                /*-----------------------------------------------------*/
+                /*                    处理CONNACK报文                  */
+                /*-----------------------------------------------------*/
+                // if判断，如果第一个字节是0x20，表示收到的是CONNACK报文
+                // 接着我们要判断第4个字节，看看CONNECT报文是否成功
+                if (MQTT_RxDataOutPtr[2] == 0x80) {
+                    switch (MQTT_RxDataOutPtr[5]) {
+                        case 0x00:
+                            u1_printf("CONNECT报文成功\r\n"); // 串口输出信息
+                            ConnectPack_flag = 1;             // CONNECT报文成功
+                            beep_on_500ms();
+                            break; // 跳出分支case 0x00
+                        case 0x01:
+                            u1_printf("连接已拒绝，不支持的协议版本，准备重启\r\n"); // 串口输出信息
+                            Connect_flag = 0;                                        // Connect_flag置零，重启连接
+                            break;                                                   // 跳出分支case 0x01
+                        case 0x02:
+                            u1_printf("连接已拒绝，不合格的客户端标识符，准备重启\r\n"); // 串口输出信息
+                            Connect_flag = 0;                                            // Connect_flag置零，重启连接
+                            break;                                                       // 跳出分支case 0x02
+                        case 0x03:
+                            u1_printf("连接已拒绝，服务端不可用，准备重启\r\n"); // 串口输出信息
+                            Connect_flag = 0;                                    // Connect_flag置零，重启连接
+                            break;                                               // 跳出分支case 0x03
+                        case 0x04:
+                            u1_printf("连接已拒绝，无效的用户名或密码，准备重启\r\n"); // 串口输出信息
+                            Connect_flag = 0;                                          // Connect_flag置零，重启连接
+                            break;                                                     // 跳出分支case 0x04
+                        case 0x05:
+                            u1_printf("连接已拒绝，未授权，准备重启\r\n"); // 串口输出信息
+                            Connect_flag = 0;                              // Connect_flag置零，重启连接
+                            break;                                         // 跳出分支case 0x05
+                        default:
+                            u1_printf("连接已拒绝，未知状态，准备重启\r\n"); // 串口输出信息
+                            Connect_flag = 0;                                // Connect_flag置零，重启连接
+                            break;                                           // 跳出分支case default
+                    }
+                }
+                /*-----------------------------------------------------*/
+                /*                    处理SUBACK报文                   */
+                /*-----------------------------------------------------*/
+                // if判断，第一个字节是0x90，表示收到的是SUBACK报文
+                // 接着我们要判断订阅回复，看看是不是成功
+                else if (MQTT_RxDataOutPtr[2] == 0x90) {
+                    for (i = 0; i < S_TOPIC_NUM; i++) { // 循环查询订阅结果
+                        switch (MQTT_RxDataOutPtr[6 + i]) {
+                            case 0x00:
+                            case 0x01:
+                                u1_printf("订阅成功%d ", i + 1); // 串口输出信息
+                                SubcribePack_flag++;             // SubcribePack_flag++
+                                break;                           // 跳出分支
+                            default:
+                                u1_printf("订阅失败，准备重启\r\n"); // 串口输出信息
+                                Connect_flag = 0;                    // Connect_flag置零，重启连接
+                                break;                               // 跳出分支
+                        }
+                    }
+                    u1_printf("\r\n"); // 串口输出信息
+                }
+                /*-----------------------------------------------------*/
+                /*                  处理PINGRESP报文                   */
+                /*-----------------------------------------------------*/
+                // if判断，第一个字节是0xD0，表示收到的是PINGRESP报文
+                else if (MQTT_RxDataOutPtr[2] == 0xD0) {
+                    u1_printf("PING报文回复\r\n"); // 串口输出信息
+                    if (Ping_flag == 1) {          // 如果Ping_flag=1，表示第一次发送
+                        Ping_flag = 0;             // 要清除Ping_flag标志
+                    } else if (Ping_flag > 1) {    // 如果Ping_flag>1，表示是多次发送了，而且是2s间隔的快速发送
+                        Ping_flag = 0;             // 要清除Ping_flag标志
+                        TIM3_ENABLE_30S();         // PING定时器重回30s的时间
+                    }
+                }
+                /*-----------------------------------------------------*/
+                /*                  处理数据推送报文                   */
+                /*-----------------------------------------------------*/
+                // if判断，如果第一个字节是0x30，表示收到的是服务器发来的推送数据
+                // 我们要提取控制命令
+                else if (MQTT_RxDataOutPtr[2] == 0x30) {
+                    u1_printf("服务器等级0推送\r\n");         // 串口输出信息
+                    MQTT_DealPushdata_Qs0(MQTT_RxDataOutPtr); // 处理等级0推送数据
+                }
+                MQTT_RxDataOutPtr += RBUFF_UNIT;            // 接收指针下移
+                if (MQTT_RxDataOutPtr == MQTT_RxDataEndPtr) // 如果接收指针到接收缓冲区尾部了
+                    MQTT_RxDataOutPtr = MQTT_RxDataBuf[0];  // 接收指针归位到接收缓冲区开头
+            }
 
         //     /*-------------------------------------------------------------*/
         //     /*                     处理命令缓冲区数据                      */
@@ -252,7 +257,7 @@ int main(void)
         //         ADCTimer       = 0;                       // ADC计时时间变量清0
         //         CAT1_RxCounter = 0;                       // 接收数据量变量清零
         //         memset(CAT1_RX_BUF, 0, CAT1_RXBUFF_SIZE); // 清空接收缓冲区
-        //         MQTT_Buff_Init();                         // 初始化发送接收命令缓冲区
+                // MQTT_Buff_Init();                         // 初始化发送接收命令缓冲区
         //         TIM3_ENABLE_30S();                        // 启动定时器3 30s的PING保活定时器
         //         TIM2_ENABLE_1S();                         // 启动定时器2 1s的定时
         //     }
@@ -370,7 +375,7 @@ void Data_State(void)
             Usart_SendArray(USART3, (unsigned char *)"iSM", 3);
             Delay_Ms(1000);
 
-            result = finaldata1*1.0 / 10;
+            result = finaldata1 * 1.0 / 10;
 
             ampdata = finaldata2;
             DIST    = result;
