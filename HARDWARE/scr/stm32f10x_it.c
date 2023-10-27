@@ -56,6 +56,7 @@ void USART2_IRQHandler(void)
         Usart2_RxCounter     = 0;                                                      // 串口3接收数据量变量清零
         DMA1_Channel6->CNDTR = USART2_RXBUFF_SIZE;                                     // 重新设置接收数据个数
         DMA_Cmd(DMA1_Channel6, ENABLE);                                                // 开启DMA
+        
         TIM_SetCounter(TIM3, 0);                                                       // 清除定时器3 计数值
     }
 }

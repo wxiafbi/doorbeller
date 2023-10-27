@@ -37,6 +37,8 @@
 #include "stmflash.h"
 #include "oled.h"
 #include "cmd.h"
+#include "gui.h"
+#include "test.h"
 
 extern int finaldata1;
 extern int finaldata2;
@@ -61,6 +63,24 @@ int main(void)
     IWDG_Init(6, 625); // 独立看门狗 时间4s
     // IWDG_Init(6, 156);   // 独立看门狗 时间4s
     Delay_Init();        // 延时功能初始化
+    LCD_Init();	   //???§????????
+	LCD_Clear(BLACK); //????
+
+	POINT_COLOR=WHITE; 
+	LCD_DrawRectangle(0,0,128-1,128-1);	//?????? 
+
+	Show_Str(32,5,BLUE,YELLOW,"?????à??",16,0);
+	Show_Str(5,25,RED,YELLOW,"????     ??",24,1);
+	LCD_ShowNum2412(5+48,25,RED,YELLOW,":32",24,1);
+
+	Show_Str(5,50,YELLOW,YELLOW,"????     ??",24,1);
+	LCD_ShowNum2412(5+48,50,YELLOW,YELLOW,":20",24,1);
+
+	Show_Str(5,75,WHITE,YELLOW,"????      ??",24,1);
+	LCD_ShowNum2412(5+48,75,WHITE,YELLOW,":3.2",24,1);
+
+	Show_Str(5,100,GREEN,YELLOW,"???÷      ??",24,1);
+	LCD_ShowNum2412(5+48,100,GREEN,YELLOW,":0.2",24,1);
     Usart1_Init(115200); // 串口1功能初始化，波特率9600
     // EXTIX_Init(); // 外部中断初始化
     // Usart2_Init(115200);
@@ -77,9 +97,9 @@ int main(void)
     //     /* code */
     //     u2_printf("%x",DataString[i]);
     // }
-
     LED_Init(); // LED初始化
     finaldata2 = finaldata1;
+    u1_printf("finaldata2=%d\r\n",finaldata2);
     //	IIC_Init();                     //初始化IIC接口
     //	AHT10_Init();                   //初始化AHT10
     //	KEY_Init();                     //按键初始化
@@ -91,14 +111,15 @@ int main(void)
     // adcdata = 2 * (float)(Get_Adc_Average(ADC_Channel_4, 8)) * (3.3 / 4096); // 获取计算后的带小数的实际电压值
     while (1) // 主循环
     {
-        u1_printf("标准值=%d\r\n",finaldata2);
-        u1_printf("参考值=%d\r\n",finaldata1);
+        // u1_printf("标准值=%d\r\n",finaldata2);
+        // u1_printf("参考值=%d\r\n",finaldata1);
         data_analysis();
         if (finaldata2 - finaldata1 > 1000) {
             /* code */
             if (OPEN_flag == 0) {
                 OPENDOOR();
                 TIM2_ENABLE_1S();     // 启动定时器2 1s的定时
+                BEEP_OUT(1);
                 OPEN_flag++;
             } else {
                 u1_printf("有人");
@@ -168,6 +189,7 @@ void data_analysis(void)
             memset(fina_data1, 0, 5);
         }
         MQTT_RxDataOutPtr += RBUFF_UNIT;            // 接收指针下移
+        IWDG_Feed();
         if (MQTT_RxDataOutPtr == MQTT_RxDataEndPtr) // 如果接收指针到接收缓冲区尾部了
             MQTT_RxDataOutPtr = MQTT_RxDataBuf[0];  // 接收指针归位到接收缓冲区开头
     }
@@ -188,8 +210,8 @@ void CLOSEDOOR(void)
         CLOSE_OUT(0);
         Delay_Ms(200);
         CLOSE_OUT(1);
-        
-       SystemTimer  = 0;
+        BEEP_OUT(0);
+        SystemTimer  = 0;
         
     }
 }

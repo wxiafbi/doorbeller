@@ -9,11 +9,11 @@
 #ifndef __MQTT_H
 #define __MQTT_H
 
-#define  R_NUM               8     //接收缓冲区个数
-#define  RBUFF_UNIT          300   //接收缓冲区长度
+#define  R_NUM               30     //接收缓冲区个数
+#define  RBUFF_UNIT          30   //接收缓冲区长度
 
-#define  T_NUM               8     //发送缓冲区个数  
-#define  TBUFF_UNIT          300   //发送缓冲区长度
+#define  T_NUM               30     //发送缓冲区个数  
+#define  TBUFF_UNIT          30   //发送缓冲区长度
 
 #define  C_NUM               8     //命令缓冲区个数
 #define  CBUFF_UNIT          300   //命令缓冲区长度
